@@ -19,13 +19,13 @@ library("gglasso")
 library("plotrix")
 library("gridExtra")
 
-setwd("~/Documents/research/rrr_gas_blackbox")
+setwd("/Users/max/Dropbox (MIT)/GitHub/rrr/rrr_gas_blackbox")
 
 #######################
 # clean and format data
 #######################
 
-for (quintile in 0:5){
+for (quintile in 0:0){
 
 #quintile=1
 
@@ -35,7 +35,7 @@ for (quintile in 0:5){
 spec=1
 #1 means Chernozhukov and Semenova
 #2 means Chernozhukov and Semenova and additional interactions
-
+source('specifications.R')
 data<-get_data(spec,quintile) #like Chernozhukov and Semenova
 
 Y=data[[1]]
@@ -68,25 +68,34 @@ if (p>60){
   p0=ceiling(p/40)
 }
 
+
 D_LB=0 #each diagonal entry of \hat{D} lower bounded by D_LB
 D_add=.2 #each diagonal entry of \hat{D} increased by D_add. 0.1 for 0, 0,.2 otw
-max_iter=10 #max number iterations in Dantzig selector iteration over estimation and weights
+max_iter=100 #max number iterations in Dantzig selector iteration over estimation and weights
 
 ###########
 # algorithm
 ###########
-
-alpha_estimator=0
-gamma_estimator=3
+# Tests alpha estimator
+alpha_estimator=1
+gamma_estimator=1
 bias=0
 #alpha_estimator: 0 dantzig, 1 lasso
 #gamma_estimator: 0 dantzig, 1 lasso, 2 rf, 3 nn
 
 set.seed(1) # for sample splitting
 
-source('stage2.R')
-results<-rrr(Y,X,X.up,X.down,delta,p0,D_LB,D_add,max_iter,alpha_estimator,gamma_estimator,bias)
-printer(results)
-for_tex(results)
+stage1_estimators<-get_stage1(Y,X,X.up,X.down,delta,p0,D_LB,D_add,max_iter,alpha_estimator,gamma_estimator)
+alpha_hat=stage1_estimators[[1]]
 
+results=mean(alpha_hat(X))
+print(results)
+
+# To test overall debiasing procedure 
+# source('stage2.R')
+# results<-rrr(Y,X,X.up,X.down,delta,p0,D_LB,D_add,max_iter,alpha_estimator,gamma_estimator,bias)
+# printer(results)
+# for_tex(results)
+
+# 
 }
